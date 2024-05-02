@@ -1,11 +1,10 @@
 import argparse
 import subprocess
 
-try:
-    import cpp_demangle
-except ModuleNotFoundError:
-    print(
-        "cpp_demangle missing, install with\n\t> pip3 install cpp_demangle\n\tor\n\t> pip3 install -r requirements.txt")
+def demangle(name):
+    args = ['c++filt', name]
+    demangled = subprocess.run(args, capture_output=True)
+    return demangled.stdout.decode()[:-1]
 
 
 def start(args):
@@ -14,6 +13,7 @@ def start(args):
     unpacked = [row.split("\t") for row in dump]
 
     result = []
+    print(f"Parsing {args.filename} ...")
 
     for row in unpacked:
         try:
@@ -23,7 +23,7 @@ def start(args):
                 if not hidden:
                     size = f"0x{size}"
                     try:
-                        name = cpp_demangle.demangle(name)
+                        name = demangle(name)
                     except ValueError:
                         pass
                     result.append((size, name))
